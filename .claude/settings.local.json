@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"E:\\\\Personal\\\\Finances\\\\SCHW\\\\ThinkScripts\" -Recurse)",
+      "Bash(Select-Object FullName, Extension)",
+      "Bash(Format-Table -AutoSize)",
+      "Bash(New-Item -ItemType Directory -Force \"E:\\\\Personal\\\\Finances\\\\SCHW\\\\ThinkScripts\\\\.claude\\\\memory\")",
+      "Bash(Out-Null)",
+      "Skill(superpowers:brainstorming)"
+    ]
+  }
+}
