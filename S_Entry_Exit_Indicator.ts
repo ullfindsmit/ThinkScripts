@@ -9,23 +9,32 @@ input showLabels  = yes;
 input showStop    = yes;
 input showTarget  = yes;
 
+# Regular trading hours only — extended hours bars are excluded from all calculations
+def inSession = secondsFromTime(0930) >= 0 and secondsTillTime(1600) >= 0;
+def rthHigh   = if inSession then high else Double.NaN;
+def rthLow    = if inSession then low  else Double.NaN;
+
 def atr = Average(TrueRange(high, close, low), atrLength);
 
-def bullishCandle = close[pivotBars] > open[pivotBars] and close[pivotBars] >= low[pivotBars] + (high[pivotBars] - low[pivotBars]) * 0.70;
-def bearishCandle = close[pivotBars] < open[pivotBars] and close[pivotBars] <= low[pivotBars] + (high[pivotBars] - low[pivotBars]) * 0.30;
+def bullishCandle = close[pivotBars] > open[pivotBars]
+                    and close[pivotBars] >= rthLow[pivotBars] + (rthHigh[pivotBars] - rthLow[pivotBars]) * 0.70;
+def bearishCandle = close[pivotBars] < open[pivotBars]
+                    and close[pivotBars] <= rthLow[pivotBars] + (rthHigh[pivotBars] - rthLow[pivotBars]) * 0.30;
 
-# Symmetric pivot: pivot bar must be highest/lowest in the full window
-# AND strictly exceed the pivotBars bars that follow it (right-side confirmation)
-def isPivotHigh = high[pivotBars] == Highest(high, pivotBars * 2 + 1)
-                  and high[pivotBars] > Highest(high, pivotBars);
-def isPivotLow  = low[pivotBars]  == Lowest(low,  pivotBars * 2 + 1)
-                  and low[pivotBars]  < Lowest(low,  pivotBars);
+# Symmetric pivot: pivot bar must be highest/lowest RTH bar in the full window
+# AND strictly exceed the RTH highs/lows of the pivotBars bars that follow it
+def isPivotHigh = inSession[pivotBars]
+                  and rthHigh[pivotBars] == Highest(rthHigh, pivotBars * 2 + 1)
+                  and rthHigh[pivotBars] > Highest(rthHigh, pivotBars);
+def isPivotLow  = inSession[pivotBars]
+                  and rthLow[pivotBars]  == Lowest(rthLow,  pivotBars * 2 + 1)
+                  and rthLow[pivotBars]  < Lowest(rthLow,  pivotBars);
 
-rec lastPivotHigh = if isPivotHigh then high[pivotBars] else lastPivotHigh[1];
-rec lastPivotLow  = if isPivotLow  then low[pivotBars]  else lastPivotLow[1];
+rec lastPivotHigh = if isPivotHigh then rthHigh[pivotBars] else lastPivotHigh[1];
+rec lastPivotLow  = if isPivotLow  then rthLow[pivotBars]  else lastPivotLow[1];
 
-def swingLow  = low[pivotBars];
-def swingHigh = high[pivotBars];
+def swingLow  = rthLow[pivotBars];
+def swingHigh = rthHigh[pivotBars];
 
 # Swing depth computed before signal to avoid circular dependency.
 # Guard > 0 required: without it, before any opposite pivot exists,
@@ -33,12 +42,14 @@ def swingHigh = high[pivotBars];
 def swingDepthLong  = if lastPivotHigh > 0 then AbsValue(lastPivotHigh - swingLow)  else 0;
 def swingDepthShort = if lastPivotLow  > 0 then AbsValue(swingHigh - lastPivotLow)  else 0;
 
-# Three-filter signal: dominant pivot + strong reversal candle + minimum swing depth
-def longSignal  = isPivotLow
+# Three-filter signal: dominant RTH pivot + strong reversal candle + minimum swing depth
+def longSignal  = inSession
+                  and isPivotLow
                   and bullishCandle
                   and swingDepthLong  >= minSwingATR * atr;
 
-def shortSignal = isPivotHigh
+def shortSignal = inSession
+                  and isPivotHigh
                   and bearishCandle
                   and swingDepthShort >= minSwingATR * atr;
 
