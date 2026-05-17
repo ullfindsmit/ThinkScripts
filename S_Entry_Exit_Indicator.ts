@@ -54,3 +54,57 @@ rec stopLevel  = if longSignal  then swingLow  - atrBuffer * atr
 rec targetLevel = if longSignal  and longRange  > 0 then swingLow  + longRange  * fibTarget
                   else if shortSignal and shortRange > 0 then swingHigh - shortRange * fibTarget
                   else targetLevel[1];
+
+# Step 1: Add arrows at signal bars
+plot LongArrow  = longSignal;
+LongArrow.SetPaintingStrategy(PaintingStrategy.BOOLEAN_ARROW_UP);
+LongArrow.SetDefaultColor(Color.GREEN);
+LongArrow.SetLineWeight(3);
+
+plot ShortArrow = shortSignal;
+ShortArrow.SetPaintingStrategy(PaintingStrategy.BOOLEAN_ARROW_DOWN);
+ShortArrow.SetDefaultColor(Color.RED);
+ShortArrow.SetLineWeight(3);
+
+# Step 2: Add horizontal dashed lines
+def active = lastSignal != 0;
+
+plot EntryLine  = if active then entryLevel else Double.NaN;
+EntryLine.SetDefaultColor(Color.WHITE);
+EntryLine.SetStyle(Curve.SHORT_DASH);
+EntryLine.SetLineWeight(2);
+
+plot StopLine   = if showStop   and active then stopLevel   else Double.NaN;
+StopLine.SetDefaultColor(Color.RED);
+StopLine.SetStyle(Curve.SHORT_DASH);
+StopLine.SetLineWeight(2);
+
+plot TargetLine = if showTarget and active and targetLevel > 0 then targetLevel else Double.NaN;
+TargetLine.SetDefaultColor(Color.GREEN);
+TargetLine.SetStyle(Curve.SHORT_DASH);
+TargetLine.SetLineWeight(2);
+
+# Step 3: Add right-edge price labels and status label
+def rightEdge = BarNumber() == HighestAll(BarNumber());
+
+AddChartBubble(showLabels and rightEdge and active,
+    entryLevel,  "Entry "  + entryLevel,  Color.WHITE, yes);
+AddChartBubble(showLabels and showStop   and rightEdge and active,
+    stopLevel,   "Stop "   + stopLevel,   Color.RED,   no);
+AddChartBubble(showLabels and showTarget and rightEdge and active and targetLevel > 0,
+    targetLevel, "Target " + targetLevel, Color.GREEN, yes);
+
+AddLabel(yes,
+    if lastSignal ==  1 then "LONG SIGNAL"
+    else if lastSignal == -1 then "SHORT SIGNAL"
+    else "WAITING",
+    if lastSignal ==  1 then Color.GREEN
+    else if lastSignal == -1 then Color.RED
+    else Color.GRAY);
+
+# Step 4: Add bar coloring
+AssignPriceColor(
+    if lastSignal ==  1 then Color.GREEN
+    else if lastSignal == -1 then Color.RED
+    else Color.GRAY
+);
