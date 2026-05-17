@@ -4,6 +4,7 @@ input pivotRightBars = 6;
 input atrLength = 14;
 input zoneAtrMultiplier = 0.75;
 input showLabels = yes;
+input showCloud = yes;
 
 def h = high(period = zoneAggregation);
 def l = low(period = zoneAggregation);
@@ -24,22 +25,28 @@ def latestDemand =
     if pivotLow then l[pivotRightBars] else Double.NaN;
 
 def supplyTop = HighestAll(latestSupply);
-def supplyBottom = supplyTop - (atr * zoneAtrMultiplier);
+def supplyBottom =
+    if !IsNaN(supplyTop)
+    then supplyTop - (atr * zoneAtrMultiplier)
+    else Double.NaN;
 
 def demandBottom = LowestAll(latestDemand);
-def demandTop = demandBottom + (atr * zoneAtrMultiplier);
+def demandTop =
+    if !IsNaN(demandBottom)
+    then demandBottom + (atr * zoneAtrMultiplier)
+    else Double.NaN;
 
 plot SupplyTopPlot =
-    if !IsNaN(supplyTop) and supplyTop > 0 then supplyTop else Double.NaN;
+    if supplyTop > 0 then supplyTop else Double.NaN;
 
 plot SupplyBottomPlot =
-    if !IsNaN(supplyBottom) and supplyBottom > 0 then supplyBottom else Double.NaN;
+    if supplyBottom > 0 then supplyBottom else Double.NaN;
 
 plot DemandTopPlot =
-    if !IsNaN(demandTop) and demandTop > 0 then demandTop else Double.NaN;
+    if demandTop > 0 then demandTop else Double.NaN;
 
 plot DemandBottomPlot =
-    if !IsNaN(demandBottom) and demandBottom > 0 then demandBottom else Double.NaN;
+    if demandBottom > 0 then demandBottom else Double.NaN;
 
 SupplyTopPlot.SetDefaultColor(Color.RED);
 SupplyTopPlot.SetLineWeight(2);
@@ -53,8 +60,51 @@ DemandTopPlot.SetLineWeight(2);
 DemandBottomPlot.SetDefaultColor(Color.GREEN);
 DemandBottomPlot.SetStyle(Curve.SHORT_DASH);
 
-AddCloud(SupplyTopPlot, SupplyBottomPlot, Color.DARK_RED);
-AddCloud(DemandTopPlot, DemandBottomPlot, Color.DARK_GREEN);
+AddCloud(
+    if showCloud then SupplyTopPlot else Double.NaN,
+    if showCloud then SupplyBottomPlot else Double.NaN,
+    Color.DARK_RED
+);
 
-AddLabel(showLabels and !IsNaN(supplyTop), "Supply Zone", Color.RED);
-AddLabel(showLabels and !IsNaN(demandBottom), "Demand Zone", Color.GREEN);
+AddCloud(
+    if showCloud then DemandTopPlot else Double.NaN,
+    if showCloud then DemandBottomPlot else Double.NaN,
+    Color.DARK_GREEN
+);
+
+def rightEdge = BarNumber() == HighestAll(BarNumber());
+
+AddChartBubble(
+    showLabels and rightEdge and !IsNaN(SupplyTopPlot),
+    SupplyTopPlot,
+    "Supply Top",
+    Color.RED,
+    yes
+);
+
+AddChartBubble(
+    showLabels and rightEdge and !IsNaN(SupplyBottomPlot),
+    SupplyBottomPlot,
+    "Supply Bottom",
+    Color.RED,
+    no
+);
+
+AddChartBubble(
+    showLabels and rightEdge and !IsNaN(DemandTopPlot),
+    DemandTopPlot,
+    "Demand Top",
+    Color.GREEN,
+    yes
+);
+
+AddChartBubble(
+    showLabels and rightEdge and !IsNaN(DemandBottomPlot),
+    DemandBottomPlot,
+    "Demand Bottom",
+    Color.GREEN,
+    no
+);
+
+AddLabel(showLabels and !IsNaN(SupplyTopPlot), "SUPPLY ZONE", Color.RED);
+AddLabel(showLabels and !IsNaN(DemandBottomPlot), "DEMAND ZONE", Color.GREEN);
