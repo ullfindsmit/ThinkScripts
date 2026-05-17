@@ -11,8 +11,8 @@ input showTarget  = yes;
 
 def atr = Average(TrueRange(high, close, low), atrLength);
 
-def bullishCandle = close > open and close >= low + (high - low) * 0.70;
-def bearishCandle = close < open and close <= low + (high - low) * 0.30;
+def bullishCandle = close[pivotBars] > open[pivotBars] and close[pivotBars] >= low[pivotBars] + (high[pivotBars] - low[pivotBars]) * 0.70;
+def bearishCandle = close[pivotBars] < open[pivotBars] and close[pivotBars] <= low[pivotBars] + (high[pivotBars] - low[pivotBars]) * 0.30;
 
 # Symmetric pivot: pivot bar must be highest/lowest in the full window
 # AND strictly exceed the pivotBars bars that follow it (right-side confirmation)
