@@ -51,8 +51,8 @@ rec stopLevel  = if longSignal  then swingLow  - atrBuffer * atr
                  else if shortSignal then swingHigh + atrBuffer * atr
                  else stopLevel[1];
 
-rec targetLevel = if longSignal  and longRange  > 0 then swingLow  + longRange  * fibTarget
-                  else if shortSignal and shortRange > 0 then swingHigh - shortRange * fibTarget
+rec targetLevel = if longSignal  and longRange  > 0 then close  + longRange  * fibTarget
+                  else if shortSignal and shortRange > 0 then close - shortRange * fibTarget
                   else targetLevel[1];
 
 # Step 1: Add arrows at signal bars
