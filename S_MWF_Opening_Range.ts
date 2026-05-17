@@ -1,10 +1,10 @@
 input openTime = 0930;
 input rangeMinutes = 15;
-input showMid = yes;
+input showMid = no;
+input showLabels = yes;
 
 def start = SecondsFromTime(openTime) >= 0;
 def endRange = SecondsFromTime(openTime + rangeMinutes) <= 0;
-
 def inRange = start and endRange;
 
 rec ORHigh =
@@ -25,9 +25,18 @@ plot OpeningRangeLow = ORLow;
 OpeningRangeLow.SetDefaultColor(Color.RED);
 OpeningRangeLow.SetLineWeight(2);
 
-plot MidPoint =
-    if showMid then (ORHigh + ORLow) / 2
-    else Double.NaN;
+AddChartBubble(
+    showLabels and BarNumber() == HighestAll(BarNumber()),
+    ORHigh,
+    "OR High",
+    Color.GREEN,
+    yes
+);
 
-MidPoint.SetDefaultColor(Color.YELLOW);
-MidPoint.SetStyle(Curve.SHORT_DASH);
+AddChartBubble(
+    showLabels and BarNumber() == HighestAll(BarNumber()),
+    ORLow,
+    "OR Low",
+    Color.RED,
+    no
+);
