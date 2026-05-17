@@ -35,12 +35,10 @@ def swingDepthShort = if lastPivotLow  > 0 then AbsValue(swingHigh - lastPivotLo
 
 # Three-filter signal: dominant pivot + strong reversal candle + minimum swing depth
 def longSignal  = isPivotLow
-                  and close > swingLow
                   and bullishCandle
                   and swingDepthLong  >= minSwingATR * atr;
 
 def shortSignal = isPivotHigh
-                  and close < swingHigh
                   and bearishCandle
                   and swingDepthShort >= minSwingATR * atr;
 
@@ -59,8 +57,8 @@ rec targetLevel = if longSignal  and swingDepthLong  > 0 then close + swingDepth
                   else if shortSignal and swingDepthShort > 0 then close - swingDepthShort * fibTarget
                   else targetLevel[1];
 
-AddChartBubble(longSignal,  low,  "BUY",        Color.GREEN, no);
-AddChartBubble(shortSignal, high, "SELL SHORT", Color.RED,   yes);
+AddChartBubble(showLabels and longSignal,  low,  "BUY",        Color.GREEN, no);
+AddChartBubble(showLabels and shortSignal, high, "SELL SHORT", Color.RED,   yes);
 
 def active = lastSignal != 0;
 
