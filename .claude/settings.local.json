@@ -6,7 +6,18 @@
       "Bash(Format-Table -AutoSize)",
       "Bash(New-Item -ItemType Directory -Force \"E:\\\\Personal\\\\Finances\\\\SCHW\\\\ThinkScripts\\\\.claude\\\\memory\")",
       "Bash(Out-Null)",
-      "Skill(superpowers:brainstorming)"
+      "Skill(superpowers:brainstorming)",
+      "PowerShell(New-Item *)",
+      "Skill(superpowers:writing-plans)",
+      "Skill(superpowers:subagent-driven-development)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(cat)",
+      "Read(//tmp/**)",
+      "Bash(grep -E \"longRange|shortRange|swingDepthLong|swingDepthShort|pivotBars\\\\s*=|minSwingATR|bullishCandle|bearishCandle\" \"E:\\\\Personal\\\\Finances\\\\SCHW\\\\ThinkScripts\\\\S_Entry_Exit_Indicator.ts\")",
+      "Bash(grep -E \"longRange|shortRange|swingDepthLong|swingDepthShort|pivotBars\\\\s*=|minSwingATR|bullishCandle|bearishCandle\" \"/E:\\\\Personal\\\\Finances\\\\SCHW\\\\ThinkScripts\\\\S_Entry_Exit_Indicator.ts\")",
+      "mcp__robinhood-trading__get_accounts",
+      "mcp__robinhood-trading__get_portfolio"
     ]
   }
 }
