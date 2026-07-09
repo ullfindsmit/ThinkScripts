@@ -30,7 +30,7 @@ input atrLength = 14;
 input volumeAverageLength = 20;
 input volumeMultiplier = 1.25;
 
-# Pullback settings. A pullback touches the selected EMA area, then confirms
+# Pullback settings.A pullback touches the selected EMA area, then confirms
 # when price breaks back in the direction of the active trend.
 input pullbackEMALength = 13;
 
@@ -49,24 +49,13 @@ def ema34 = ExpAverage(close, 34);
 def ema50 = ExpAverage(close, 50);
 def pullbackEMA = ExpAverage(close, pullbackEMALength);
 
-# Core trend/quality indicators.
+# Core trend / quality indicators.
 def adxValue = ADX(adxLength);
 def atrValue = ATR(atrLength);
 def atrAverage = Average(atrValue, 20);
 def atrExpanding = atrValue > atrAverage;
 def averageVolume = Average(volume, volumeAverageLength);
 def vwapLine = VWAP();
-
-# Cloud colors are brightest for near-term momentum and darker for longer-term
-# structure so each channel is easier to distinguish on a busy chart.
-DefineGlobalColor("FastBullCloud", CreateColor(0, 255, 90));
-DefineGlobalColor("FastBearCloud", CreateColor(255, 70, 70));
-DefineGlobalColor("TriggerBullCloud", CreateColor(80, 220, 255));
-DefineGlobalColor("TriggerBearCloud", CreateColor(255, 120, 40));
-DefineGlobalColor("MidBullCloud", CreateColor(0, 150, 60));
-DefineGlobalColor("MidBearCloud", CreateColor(170, 40, 40));
-DefineGlobalColor("LongBullCloud", CreateColor(0, 85, 35));
-DefineGlobalColor("LongBearCloud", CreateColor(95, 15, 15));
 
 # Slope checks use only prior bars and therefore do not repaint.
 def ema5Rising = ema5 > ema5[1];
@@ -81,7 +70,7 @@ def ema50Falling = ema50 < ema50[1];
 # ==========================================
 # TREND ENGINE
 # ==========================================
-# Cloud-by-cloud alignment.
+# Cloud - by - cloud alignment.
 def cloudBull_5_13 = ema5 > ema13;
 def cloudBull_8_9 = ema8 > ema9;
 def cloudBull_20_21 = ema20 > ema21;
@@ -96,7 +85,7 @@ def cloudBear_34_50 = ema34 < ema50;
 def allCloudsBull = cloudBull_5_13 and cloudBull_8_9 and cloudBull_20_21 and cloudBull_34_50;
 def allCloudsBear = cloudBear_5_13 and cloudBear_8_9 and cloudBear_20_21 and cloudBear_34_50;
 
-# Strong alignment adds wide-stack ordering and slope confirmation.
+# Strong alignment adds wide - stack ordering and slope confirmation.
 def bullStack = ema5 > ema8 and ema8 > ema9 and ema9 > ema13 and ema13 > ema20 and ema20 > ema21 and ema21 > ema34 and ema34 > ema50;
 def bearStack = ema5 < ema8 and ema8 < ema9 and ema9 < ema13 and ema13 < ema20 and ema20 < ema21 and ema21 < ema34 and ema34 < ema50;
 def bullSlopes = ema5Rising and ema13Rising and ema20Rising and ema50Rising;
@@ -104,15 +93,15 @@ def bearSlopes = ema5Falling and ema13Falling and ema20Falling and ema50Falling;
 
 def strongBull = bullStack and bullSlopes and adxValue >= adxThreshold and atrExpanding;
 def strongBear = bearStack and bearSlopes and adxValue >= adxThreshold and atrExpanding;
-def bullTrend = allCloudsBull and (ema5Rising or ema13Rising or ema20Rising);
-def bearTrend = allCloudsBear and (ema5Falling or ema13Falling or ema20Falling);
-def neutralTrend = !bullTrend and !bearTrend;
+def bullTrend = allCloudsBull and(ema5Rising or ema13Rising or ema20Rising);
+def bearTrend = allCloudsBear and(ema5Falling or ema13Falling or ema20Falling);
+def neutralTrend = !bullTrend and!bearTrend;
 
 # Direction is held as state so pullback counts reset only on trend changes.
 def rawTrendDirection =
     if bullTrend then 1
-    else if bearTrend then -1
-    else 0;
+    else if bearTrend then - 1
+else 0;
 
 rec trendDirection = CompoundValue(1, rawTrendDirection, 0);
 def trendReversal = trendDirection <> trendDirection[1] and trendDirection <> 0;
@@ -120,7 +109,7 @@ def trendReversal = trendDirection <> trendDirection[1] and trendDirection <> 0;
 # ==========================================
 # SCORING
 # ==========================================
-# Each component contributes to a 0-100 confidence score. Directional filters
+# Each component contributes to a 0 - 100 confidence score.Directional filters
 # score the currently active trend; neutral bars receive no directional credit.
 def alignmentScore =
     if strongBull or strongBear then 40
@@ -155,7 +144,7 @@ def confidenceScore = alignmentScore + adxScore + volumeScore + vwapScore + slop
 # EMA spread measures the percent distance between the 5, 20, and 50 EMAs.
 def spreadHigh = Max(ema5, Max(ema20, ema50));
 def spreadLow = Min(ema5, Min(ema20, ema50));
-def emaSpreadPercent = if close != 0 then (spreadHigh - spreadLow) / close * 100 else 0;
+def emaSpreadPercent = if close != 0 then(spreadHigh - spreadLow) / close * 100 else 0;
 
 # ==========================================
 # FILTERS
@@ -173,7 +162,7 @@ def shortFiltersPass = allCloudsBear and adxPass and atrPass and volumePass and 
 # ==========================================
 # PULLBACKS
 # ==========================================
-# Pullback touches are tracked after a trend exists. Confirmations fire only
+# Pullback touches are tracked after a trend exists.Confirmations fire only
 # when price breaks out of the pullback in the same trend direction.
 def bullPullbackTouch = trendDirection == 1 and low <= pullbackEMA and close >= ema20;
 def bearPullbackTouch = trendDirection == -1 and high >= pullbackEMA and close <= ema20;
@@ -182,14 +171,14 @@ rec inPullback = CompoundValue(1,
     if trendDirection == 0 or trendDirection <> trendDirection[1] then 0
     else if bullPullbackTouch or bearPullbackTouch then 1
     else if (trendDirection == 1 and close > high[1] and close > ema5) or
-            (trendDirection == -1 and close < low[1] and close < ema5) then 0
+    (trendDirection == -1 and close < low[1] and close < ema5) then 0
     else inPullback[1],
     0);
 
 def pullbackBreakout =
     inPullback[1] and
-    ((trendDirection == 1 and close > high[1] and close > ema5) or
-     (trendDirection == -1 and close < low[1] and close < ema5));
+        ((trendDirection == 1 and close > high[1] and close > ema5) or
+            (trendDirection == -1 and close < low[1] and close < ema5));
 
 rec pullbackCount = CompoundValue(1,
     if trendDirection == 0 or trendDirection <> trendDirection[1] then 0
@@ -245,10 +234,10 @@ EMA50Cloud.SetDefaultColor(Color.RED);
 EMA34Cloud.HideBubble();
 EMA50Cloud.HideBubble();
 
-AddCloud(EMA5Cloud, EMA13Cloud, GlobalColor("FastBullCloud"), GlobalColor("FastBearCloud"));
-AddCloud(EMA8Cloud, EMA9Cloud, GlobalColor("TriggerBullCloud"), GlobalColor("TriggerBearCloud"));
-AddCloud(EMA20Cloud, EMA21Cloud, GlobalColor("MidBullCloud"), GlobalColor("MidBearCloud"));
-AddCloud(EMA34Cloud, EMA50Cloud, GlobalColor("LongBullCloud"), GlobalColor("LongBearCloud"));
+AddCloud(EMA5Cloud, EMA13Cloud, Color.GREEN, Color.RED);
+AddCloud(EMA8Cloud, EMA9Cloud, Color.GREEN, Color.RED);
+AddCloud(EMA20Cloud, EMA21Cloud, Color.GREEN, Color.RED);
+AddCloud(EMA34Cloud, EMA50Cloud, Color.GREEN, Color.RED);
 
 # Buy and sell arrows appear only on fully filtered PB1 breakouts.
 plot BuyArrow = if showArrows and buySignal then low else Double.NaN;
@@ -263,8 +252,8 @@ SellArrow.SetDefaultColor(Color.RED);
 SellArrow.SetLineWeight(4);
 SellArrow.HideBubble();
 
-# Pullback labels are price-anchored bubbles colored by pullback number.
-AddChartBubble(showPullbacks and pb1, if trendDirection == 1 then low else high, "PB1", Color.CYAN, trendDirection == -1);
+# Pullback labels are price - anchored bubbles colored by pullback number.
+    AddChartBubble(showPullbacks and pb1, if trendDirection == 1 then low else high, "PB1", Color.CYAN, trendDirection == -1);
 AddChartBubble(showPullbacks and pb2, if trendDirection == 1 then low else high, "PB2", Color.YELLOW, trendDirection == -1);
 AddChartBubble(showPullbacks and pb3Plus, if trendDirection == 1 then low else high, "PB3", Color.GRAY, trendDirection == -1);
 
@@ -272,16 +261,16 @@ AddChartBubble(showPullbacks and pb3Plus, if trendDirection == 1 then low else h
 # LABELS
 # ==========================================
 # Confidence score label uses the requested color bands.
-AddLabel(showLabels,
-    "CS: " + AsText(Round(confidenceScore, 0)),
+    AddLabel(showLabels,
+        "CS: " + AsText(Round(confidenceScore, 0)),
     if confidenceScore >= 90 then CreateColor(0, 255, 0)
     else if confidenceScore >= 80 then Color.GREEN
     else if confidenceScore >= 70 then Color.YELLOW
     else if confidenceScore >= 60 then Color.ORANGE
     else Color.RED);
 
-# Trend state label shows the five-state trend engine.
-AddLabel(showLabels,
+# Trend state label shows the five - state trend engine.
+    AddLabel(showLabels,
     if strongBull then "STRONG BULL"
     else if bullTrend then "BULL"
     else if strongBear then "STRONG BEAR"
@@ -302,9 +291,9 @@ AddLabel(showLabels,
 # BACKGROUND
 # ==========================================
 # Background is off by default because TOS paints the entire historical chart
-# for every qualifying bar. When enabled, it marks only high-confidence strong
-# regimes so the chart does not become a permanent green/red pane.
-AssignBackgroundColor(
+# for every qualifying bar.When enabled, it marks only high - confidence strong
+# regimes so the chart does not become a permanent green / red pane.
+    AssignBackgroundColor(
     if !showBackground then Color.CURRENT
     else if strongBull and confidenceScore >= 90 then Color.DARK_GREEN
     else if strongBear and confidenceScore >= 90 then Color.DARK_RED
@@ -315,7 +304,7 @@ AssignBackgroundColor(
 # ALERTS
 # ==========================================
 # Alerts are gated by one input and fire once per qualifying bar.
-Alert(useAlerts and buySignal, "EMA Cloud Trend System Pro: Buy", Alert.BAR, Sound.Ding);
+    Alert(useAlerts and buySignal, "EMA Cloud Trend System Pro: Buy", Alert.BAR, Sound.Ding);
 Alert(useAlerts and sellSignal, "EMA Cloud Trend System Pro: Sell", Alert.BAR, Sound.Bell);
 Alert(useAlerts and pb1, "EMA Cloud Trend System Pro: PB1", Alert.BAR, Sound.Chimes);
 Alert(useAlerts and trendReversal, "EMA Cloud Trend System Pro: Trend Reversal", Alert.BAR, Sound.Ring);
