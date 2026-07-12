@@ -208,36 +208,49 @@ def trendWeakening = confidenceScore < confidenceScore[1] and confidenceScore[1]
 # Cloud plots are hidden when the master cloud input is off.
 plot EMA5Cloud = if showClouds then ema5 else Double.NaN;
 plot EMA13Cloud = if showClouds then ema13 else Double.NaN;
-EMA5Cloud.SetDefaultColor(Color.GREEN);
-EMA13Cloud.SetDefaultColor(Color.RED);
+EMA5Cloud.SetDefaultColor(CreateColor(0, 255, 255));
+EMA13Cloud.SetDefaultColor(CreateColor(255, 80, 180));
+EMA5Cloud.AssignValueColor(CreateColor(0, 255, 255));
+EMA13Cloud.AssignValueColor(CreateColor(255, 80, 180));
+EMA5Cloud.SetLineWeight(3);
+EMA13Cloud.SetLineWeight(3);
 EMA5Cloud.HideBubble();
 EMA13Cloud.HideBubble();
 
 plot EMA8Cloud = if showClouds then ema8 else Double.NaN;
 plot EMA9Cloud = if showClouds then ema9 else Double.NaN;
-EMA8Cloud.SetDefaultColor(Color.GREEN);
-EMA9Cloud.SetDefaultColor(Color.RED);
+EMA8Cloud.SetDefaultColor(CreateColor(0, 255, 90));
+EMA9Cloud.SetDefaultColor(CreateColor(255, 160, 0));
+EMA8Cloud.AssignValueColor(CreateColor(0, 255, 90));
+EMA9Cloud.AssignValueColor(CreateColor(255, 160, 0));
+EMA8Cloud.SetLineWeight(2);
+EMA9Cloud.SetLineWeight(2);
 EMA8Cloud.HideBubble();
 EMA9Cloud.HideBubble();
 
 plot EMA20Cloud = if showClouds then ema20 else Double.NaN;
 plot EMA21Cloud = if showClouds then ema21 else Double.NaN;
-EMA20Cloud.SetDefaultColor(Color.GREEN);
-EMA21Cloud.SetDefaultColor(Color.RED);
+EMA20Cloud.SetDefaultColor(CreateColor(0, 150, 60));
+EMA21Cloud.SetDefaultColor(CreateColor(170, 40, 40));
+EMA20Cloud.AssignValueColor(CreateColor(0, 150, 60));
+EMA21Cloud.AssignValueColor(CreateColor(170, 40, 40));
 EMA20Cloud.HideBubble();
 EMA21Cloud.HideBubble();
 
 plot EMA34Cloud = if showClouds then ema34 else Double.NaN;
 plot EMA50Cloud = if showClouds then ema50 else Double.NaN;
-EMA34Cloud.SetDefaultColor(Color.GREEN);
-EMA50Cloud.SetDefaultColor(Color.RED);
+EMA34Cloud.SetDefaultColor(CreateColor(0, 85, 35));
+EMA50Cloud.SetDefaultColor(CreateColor(95, 15, 15));
+EMA34Cloud.AssignValueColor(CreateColor(0, 85, 35));
+EMA50Cloud.AssignValueColor(CreateColor(95, 15, 15));
 EMA34Cloud.HideBubble();
 EMA50Cloud.HideBubble();
 
-AddCloud(EMA5Cloud, EMA13Cloud, Color.GREEN, Color.RED);
-AddCloud(EMA8Cloud, EMA9Cloud, Color.GREEN, Color.RED);
-AddCloud(EMA20Cloud, EMA21Cloud, Color.GREEN, Color.RED);
-AddCloud(EMA34Cloud, EMA50Cloud, Color.GREEN, Color.RED);
+# Draw broad structure first and fast channels last so short-term clouds remain visible.
+AddCloud(EMA34Cloud, EMA50Cloud, CreateColor(0, 85, 35), CreateColor(95, 15, 15));
+AddCloud(EMA20Cloud, EMA21Cloud, CreateColor(0, 150, 60), CreateColor(170, 40, 40));
+AddCloud(EMA8Cloud, EMA9Cloud, CreateColor(0, 255, 90), CreateColor(255, 160, 0));
+AddCloud(EMA5Cloud, EMA13Cloud, CreateColor(0, 255, 255), CreateColor(255, 80, 180));
 
 # Buy and sell arrows appear only on fully filtered PB1 breakouts.
 plot BuyArrow = if showArrows and buySignal then low else Double.NaN;
@@ -286,6 +299,12 @@ AddChartBubble(showPullbacks and pb3Plus, if trendDirection == 1 then low else h
 AddLabel(showLabels,
     "ES: " + AsText(Round(emaSpreadPercent, 2)) + "%",
     if emaSpreadPercent >= emaSpreadPercent[1] then Color.GREEN else Color.GRAY);
+
+# Cloud legend labels identify the color mapping for each EMA channel.
+AddLabel(showLabels, "5/13: cyan / pink", CreateColor(0, 255, 255));
+AddLabel(showLabels, "8/9: lime / orange", CreateColor(0, 255, 90));
+AddLabel(showLabels, "20/21: med green / red", CreateColor(0, 150, 60));
+AddLabel(showLabels, "34/50: dark green / dark red", CreateColor(0, 85, 35));
 
 # ==========================================
 # BACKGROUND

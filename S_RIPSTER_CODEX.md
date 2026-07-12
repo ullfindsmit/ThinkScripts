@@ -27,6 +27,7 @@ Start by reading the chart visually from left to right. The study is built so th
 | `PB3` bubble | Third or later confirmed pullback in the same trend | Treat as mature-trend information, not a fresh-trend setup |
 | Green up arrow | Fully filtered bullish PB1 breakout | Potential long continuation signal |
 | Red down arrow | Fully filtered bearish PB1 breakout | Potential short continuation signal |
+| Cloud legend labels | Shows the EMA pair color map | Confirms which channel each line/cloud color represents |
 | Dark green background | Optional high-confidence strong bull regime | Background is off by default to keep charts readable |
 | Dark red background | Optional high-confidence strong bear regime | Background is off by default to keep charts readable |
 | Dark gray background | Optional low-confidence neutral regime | Marks weak/choppy structure when enabled |
@@ -56,16 +57,21 @@ The study is intended for charts from 1 minute through monthly. Intraday charts 
 
 The study plots four EMA cloud pairs:
 
-| Cloud | Purpose |
-|---|---|
-| 5 / 13 EMA | Fast momentum cloud |
-| 8 / 9 EMA | Very short-term trigger cloud |
-| 20 / 21 EMA | Intermediate trend cloud |
-| 34 / 50 EMA | Larger trend structure cloud |
+| Cloud | Colors | Purpose |
+|---|---|---|
+| 5 / 13 EMA | Cyan / pink | Fast momentum cloud, thickest near-term lines |
+| 8 / 9 EMA | Bright lime / orange | Very short-term trigger cloud |
+| 20 / 21 EMA | Medium green / red | Intermediate trend cloud |
+| 34 / 50 EMA | Dark green / dark red | Larger trend structure cloud |
 
-Green clouds mean the faster EMA is above the slower EMA.
+The study also adds legend labels at the top of the chart:
 
-Red clouds mean the faster EMA is below the slower EMA.
+- `5/13: cyan / pink`
+- `8/9: lime / orange`
+- `20/21: med green / red`
+- `34/50: dark green / dark red`
+
+For each cloud pair, the first color represents the faster EMA side of that channel and the second color represents the slower EMA side.
 
 ## High-Level Cloud Usage
 
