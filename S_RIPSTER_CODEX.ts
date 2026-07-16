@@ -11,6 +11,7 @@ declare upper;
 input showClouds = yes;
 input showArrows = yes;
 input showLabels = yes;
+input showLastEventLabel = yes;
 input showBackground = no;
 input showPullbacks = yes;
 
@@ -202,6 +203,49 @@ def sellSignal = shortFiltersPass and pb1Confirmed and trendDirection == -1;
 def trendStrengthIncrease = confidenceScore > confidenceScore[1] and confidenceScore >= 70;
 def trendWeakening = confidenceScore < confidenceScore[1] and confidenceScore[1] >= 70;
 
+# Alert-worthy event tracking stores the most recent signal as a numeric code.
+# This keeps the label stateful without relying on recursive strings.
+def buyEvent = buySignal;
+def sellEvent = sellSignal;
+def pb1LongEvent = pb1 and trendDirection == 1;
+def pb1ShortEvent = pb1 and trendDirection == -1;
+def reversalLongEvent = trendReversal and trendDirection == 1;
+def reversalShortEvent = trendReversal and trendDirection == -1;
+def strengthLongEvent = trendStrengthIncrease and trendDirection == 1;
+def strengthShortEvent = trendStrengthIncrease and trendDirection == -1;
+def weakeningLongEvent = trendWeakening and trendDirection == 1;
+def weakeningShortEvent = trendWeakening and trendDirection == -1;
+
+def currentEventCode =
+    if buyEvent then 1
+    else if sellEvent then 2
+    else if pb1LongEvent then 3
+    else if pb1ShortEvent then 4
+    else if reversalLongEvent then 5
+    else if reversalShortEvent then 6
+    else if strengthLongEvent then 7
+    else if strengthShortEvent then 8
+    else if weakeningLongEvent then 9
+    else if weakeningShortEvent then 10
+    else 0;
+
+def hasCurrentEvent = currentEventCode <> 0;
+
+rec lastEventCode = CompoundValue(1,
+    if hasCurrentEvent then currentEventCode else lastEventCode[1],
+    0);
+
+rec lastEventDate = CompoundValue(1,
+    if hasCurrentEvent then GetYYYYMMDD() else lastEventDate[1],
+    0);
+
+rec lastEventSeconds = CompoundValue(1,
+    if hasCurrentEvent then SecondsFromTime(0) else lastEventSeconds[1],
+    0);
+
+def lastEventHour = Floor(lastEventSeconds / 3600);
+def lastEventMinute = Floor((lastEventSeconds - lastEventHour * 3600) / 60);
+
 # ==========================================
 # PLOTS
 # ==========================================
@@ -265,10 +309,12 @@ SellArrow.SetDefaultColor(Color.RED);
 SellArrow.SetLineWeight(4);
 SellArrow.HideBubble();
 
-# Pullback labels are price - anchored bubbles colored by pullback number.
-    AddChartBubble(showPullbacks and pb1, if trendDirection == 1 then low else high, "PB1", Color.CYAN, trendDirection == -1);
-AddChartBubble(showPullbacks and pb2, if trendDirection == 1 then low else high, "PB2", Color.YELLOW, trendDirection == -1);
-AddChartBubble(showPullbacks and pb3Plus, if trendDirection == 1 then low else high, "PB3", Color.GRAY, trendDirection == -1);
+# Pullback labels are price-anchored bubbles colored by pullback number.
+# The suffix identifies the active trend direction: (L) for long setups and
+# (S) for short setups.
+AddChartBubble(showPullbacks and pb1, if trendDirection == 1 then low else high, if trendDirection == 1 then "PB1(L)" else "PB1(S)", Color.CYAN, trendDirection == -1);
+AddChartBubble(showPullbacks and pb2, if trendDirection == 1 then low else high, if trendDirection == 1 then "PB2(L)" else "PB2(S)", Color.YELLOW, trendDirection == -1);
+AddChartBubble(showPullbacks and pb3Plus, if trendDirection == 1 then low else high, if trendDirection == 1 then "PB3(L)" else "PB3(S)", Color.GRAY, trendDirection == -1);
 
 # ==========================================
 # LABELS
@@ -306,6 +352,25 @@ AddLabel(showLabels, "8/9: lime / orange", CreateColor(0, 255, 90));
 AddLabel(showLabels, "20/21: med green / red", CreateColor(0, 150, 60));
 AddLabel(showLabels, "34/50: dark green / dark red", CreateColor(0, 85, 35));
 
+# Last event label shows the most recent alert condition and the bar time.
+AddLabel(showLabels and showLastEventLabel and lastEventCode <> 0,
+    "Last: " +
+    (if lastEventCode == 1 then "Buy Long"
+    else if lastEventCode == 2 then "Sell Short"
+    else if lastEventCode == 3 then "PB1 Long"
+    else if lastEventCode == 4 then "PB1 Short"
+    else if lastEventCode == 5 then "Trend Reversal Bullish / Long"
+    else if lastEventCode == 6 then "Trend Reversal Bearish / Short"
+    else if lastEventCode == 7 then "Bullish / Long Strength Increasing"
+    else if lastEventCode == 8 then "Bearish / Short Strength Increasing"
+    else if lastEventCode == 9 then "Bullish / Long Trend Weakening"
+    else "Bearish / Short Trend Weakening") +
+    " @ " + AsText(lastEventDate) + " " + AsText(lastEventHour) + ":" +
+    (if lastEventMinute < 10 then "0" else "") + AsText(lastEventMinute),
+    if lastEventCode == 1 or lastEventCode == 3 or lastEventCode == 5 or lastEventCode == 7 then Color.GREEN
+    else if lastEventCode == 2 or lastEventCode == 4 or lastEventCode == 6 or lastEventCode == 8 then Color.RED
+    else Color.ORANGE);
+
 # ==========================================
 # BACKGROUND
 # ==========================================
@@ -323,9 +388,13 @@ AddLabel(showLabels, "34/50: dark green / dark red", CreateColor(0, 85, 35));
 # ALERTS
 # ==========================================
 # Alerts are gated by one input and fire once per qualifying bar.
-    Alert(useAlerts and buySignal, "EMA Cloud Trend System Pro: Buy", Alert.BAR, Sound.Ding);
-Alert(useAlerts and sellSignal, "EMA Cloud Trend System Pro: Sell", Alert.BAR, Sound.Bell);
-Alert(useAlerts and pb1, "EMA Cloud Trend System Pro: PB1", Alert.BAR, Sound.Chimes);
-Alert(useAlerts and trendReversal, "EMA Cloud Trend System Pro: Trend Reversal", Alert.BAR, Sound.Ring);
-Alert(useAlerts and trendStrengthIncrease, "EMA Cloud Trend System Pro: Trend Strength Increase", Alert.BAR, Sound.Ding);
-Alert(useAlerts and trendWeakening, "EMA Cloud Trend System Pro: Trend Weakening", Alert.BAR, Sound.Bell);
+Alert(useAlerts and buyEvent, "EMA Cloud Trend System Pro: Buy Long", Alert.BAR, Sound.Ding);
+Alert(useAlerts and sellEvent, "EMA Cloud Trend System Pro: Sell Short", Alert.BAR, Sound.Bell);
+Alert(useAlerts and pb1LongEvent, "EMA Cloud Trend System Pro: PB1 Long", Alert.BAR, Sound.Chimes);
+Alert(useAlerts and pb1ShortEvent, "EMA Cloud Trend System Pro: PB1 Short", Alert.BAR, Sound.Chimes);
+Alert(useAlerts and reversalLongEvent, "EMA Cloud Trend System Pro: Trend Reversal Bullish / Long", Alert.BAR, Sound.Ring);
+Alert(useAlerts and reversalShortEvent, "EMA Cloud Trend System Pro: Trend Reversal Bearish / Short", Alert.BAR, Sound.Ring);
+Alert(useAlerts and strengthLongEvent, "EMA Cloud Trend System Pro: Bullish / Long Strength Increasing", Alert.BAR, Sound.Ding);
+Alert(useAlerts and strengthShortEvent, "EMA Cloud Trend System Pro: Bearish / Short Strength Increasing", Alert.BAR, Sound.Ding);
+Alert(useAlerts and weakeningLongEvent, "EMA Cloud Trend System Pro: Bullish / Long Trend Weakening", Alert.BAR, Sound.Bell);
+Alert(useAlerts and weakeningShortEvent, "EMA Cloud Trend System Pro: Bearish / Short Trend Weakening", Alert.BAR, Sound.Bell);

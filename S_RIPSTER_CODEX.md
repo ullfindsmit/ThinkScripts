@@ -22,9 +22,10 @@ Start by reading the chart visually from left to right. The study is built so th
 | `CS:` label | Confidence Score from 0-100 | Higher scores mean stronger trend confirmation |
 | Trend label | Current regime: `STRONG BULL`, `BULL`, `NEUTRAL`, `BEAR`, or `STRONG BEAR` | Use it as the main directional filter |
 | `ES:` label | EMA Spread between the 5, 20, and 50 EMAs | Wider spread usually means stronger trend expansion |
-| `PB1` bubble | First confirmed pullback in the current trend | Most important pullback label; this is the only pullback that can trigger arrows |
-| `PB2` bubble | Second confirmed pullback in the same trend | Still useful, but later than PB1 |
-| `PB3` bubble | Third or later confirmed pullback in the same trend | Treat as mature-trend information, not a fresh-trend setup |
+| `Last:` label | Most recent alert-worthy event and bar time | Quickly shows the latest buy, sell, PB1, reversal, strength, or weakening event |
+| `PB1(L)` / `PB1(S)` bubble | First confirmed pullback in the current trend | Most important pullback label; this is the only pullback that can trigger arrows |
+| `PB2(L)` / `PB2(S)` bubble | Second confirmed pullback in the same trend | Still useful, but later than PB1 |
+| `PB3(L)` / `PB3(S)` bubble | Third or later confirmed pullback in the same trend | Treat as mature-trend information, not a fresh-trend setup |
 | Green up arrow | Fully filtered bullish PB1 breakout | Potential long continuation signal |
 | Red down arrow | Fully filtered bearish PB1 breakout | Potential short continuation signal |
 | Cloud legend labels | Shows the EMA pair color map | Confirms which channel each line/cloud color represents |
@@ -150,6 +151,19 @@ Higher spread means the EMAs are more separated, which often reflects stronger t
 
 Use `ES` as a trend quality metric, not as a standalone buy/sell signal.
 
+## Last Event Label
+
+The `Last:` label shows the most recent alert-worthy event on the chart.
+
+Examples:
+
+- `Last: Buy Long @ 20260716 10:35`
+- `Last: PB1 Short @ 20260716 13:20`
+- `Last: Trend Reversal Bullish / Long @ 20260716 09:45`
+- `Last: Bearish / Short Strength Increasing @ 20260716 14:10`
+
+The time shown is the time of the bar where the event occurred. On intraday charts this is most useful as a quick reminder of the latest signal. On daily, weekly, or monthly charts, the date is usually more important than the intraday time.
+
 ## Pullbacks
 
 The study tracks pullbacks after a trend has been established.
@@ -180,15 +194,20 @@ In a downtrend:
 
 | Label | Meaning | Color |
 |---|---|---|
-| `PB1` | First confirmed pullback after a new trend starts | Cyan |
-| `PB2` | Second confirmed pullback in the same trend | Yellow |
-| `PB3` | Third or later confirmed pullback in the same trend | Gray |
+| `PB1(L)` | First confirmed pullback after a new bullish trend starts | Cyan |
+| `PB1(S)` | First confirmed pullback after a new bearish trend starts | Cyan |
+| `PB2(L)` | Second confirmed pullback in the same bullish trend | Yellow |
+| `PB2(S)` | Second confirmed pullback in the same bearish trend | Yellow |
+| `PB3(L)` | Third or later confirmed pullback in the same bullish trend | Gray |
+| `PB3(S)` | Third or later confirmed pullback in the same bearish trend | Gray |
 
 Important behavior:
 
 - `PB1` can only occur once per trend.
 - The pullback count resets when the trend direction changes.
-- `PB3` means PB3 or greater, not only the exact third pullback.
+- `(L)` means the pullback is part of a bullish/long trend.
+- `(S)` means the pullback is part of a bearish/short trend.
+- `PB3(L)` and `PB3(S)` mean PB3 or greater, not only the exact third pullback.
 - PB labels are not predictions. They mark confirmed pullback breakouts after the fact.
 
 ## Buy And Sell Arrows
