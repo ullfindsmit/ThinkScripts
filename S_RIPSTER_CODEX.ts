@@ -14,6 +14,7 @@ input showLabels = yes;
 input showLastEventLabel = yes;
 input showBackground = no;
 input showPullbacks = yes;
+input showTrendEndBubbles = yes;
 
 # Filter enable controls.
 input useVWAPFilter = yes;
@@ -106,6 +107,8 @@ else 0;
 
 rec trendDirection = CompoundValue(1, rawTrendDirection, 0);
 def trendReversal = trendDirection <> trendDirection[1] and trendDirection <> 0;
+def longTrendEnded = trendDirection[1] == 1 and trendDirection == 0;
+def shortTrendEnded = trendDirection[1] == -1 and trendDirection == 0;
 
 # ==========================================
 # SCORING
@@ -211,6 +214,8 @@ def pb1LongEvent = pb1 and trendDirection == 1;
 def pb1ShortEvent = pb1 and trendDirection == -1;
 def reversalLongEvent = trendReversal and trendDirection == 1;
 def reversalShortEvent = trendReversal and trendDirection == -1;
+def longTrendEndEvent = longTrendEnded;
+def shortTrendEndEvent = shortTrendEnded;
 def strengthLongEvent = trendStrengthIncrease and trendDirection == 1;
 def strengthShortEvent = trendStrengthIncrease and trendDirection == -1;
 def weakeningLongEvent = trendWeakening and trendDirection == 1;
@@ -223,10 +228,12 @@ def currentEventCode =
     else if pb1ShortEvent then 4
     else if reversalLongEvent then 5
     else if reversalShortEvent then 6
-    else if strengthLongEvent then 7
-    else if strengthShortEvent then 8
-    else if weakeningLongEvent then 9
-    else if weakeningShortEvent then 10
+    else if longTrendEndEvent then 7
+    else if shortTrendEndEvent then 8
+    else if strengthLongEvent then 9
+    else if strengthShortEvent then 10
+    else if weakeningLongEvent then 11
+    else if weakeningShortEvent then 12
     else 0;
 
 def hasCurrentEvent = currentEventCode <> 0;
@@ -316,6 +323,11 @@ AddChartBubble(showPullbacks and pb1, if trendDirection == 1 then low else high,
 AddChartBubble(showPullbacks and pb2, if trendDirection == 1 then low else high, if trendDirection == 1 then "PB2(L)" else "PB2(S)", Color.YELLOW, trendDirection == -1);
 AddChartBubble(showPullbacks and pb3Plus, if trendDirection == 1 then low else high, if trendDirection == 1 then "PB3(L)" else "PB3(S)", Color.GRAY, trendDirection == -1);
 
+# Trend-end bubbles mark when a long or short regime fades into neutral before
+# a confirmed opposite trend appears.
+AddChartBubble(showTrendEndBubbles and longTrendEndEvent, high, "LONG END", Color.ORANGE, yes);
+AddChartBubble(showTrendEndBubbles and shortTrendEndEvent, low, "SHORT END", Color.ORANGE, no);
+
 # ==========================================
 # LABELS
 # ==========================================
@@ -361,14 +373,16 @@ AddLabel(showLabels and showLastEventLabel and lastEventCode <> 0,
     else if lastEventCode == 4 then "PB1 Short"
     else if lastEventCode == 5 then "Trend Reversal Bullish / Long"
     else if lastEventCode == 6 then "Trend Reversal Bearish / Short"
-    else if lastEventCode == 7 then "Bullish / Long Strength Increasing"
-    else if lastEventCode == 8 then "Bearish / Short Strength Increasing"
-    else if lastEventCode == 9 then "Bullish / Long Trend Weakening"
+    else if lastEventCode == 7 then "Long Trend Ended / Neutral"
+    else if lastEventCode == 8 then "Short Trend Ended / Neutral"
+    else if lastEventCode == 9 then "Bullish / Long Strength Increasing"
+    else if lastEventCode == 10 then "Bearish / Short Strength Increasing"
+    else if lastEventCode == 11 then "Bullish / Long Trend Weakening"
     else "Bearish / Short Trend Weakening") +
     " @ " + AsText(lastEventDate) + " " + AsText(lastEventHour) + ":" +
     (if lastEventMinute < 10 then "0" else "") + AsText(lastEventMinute),
-    if lastEventCode == 1 or lastEventCode == 3 or lastEventCode == 5 or lastEventCode == 7 then Color.GREEN
-    else if lastEventCode == 2 or lastEventCode == 4 or lastEventCode == 6 or lastEventCode == 8 then Color.RED
+    if lastEventCode == 1 or lastEventCode == 3 or lastEventCode == 5 or lastEventCode == 9 then Color.GREEN
+    else if lastEventCode == 2 or lastEventCode == 4 or lastEventCode == 6 or lastEventCode == 10 then Color.RED
     else Color.ORANGE);
 
 # ==========================================
@@ -394,6 +408,8 @@ Alert(useAlerts and pb1LongEvent, "EMA Cloud Trend System Pro: PB1 Long", Alert.
 Alert(useAlerts and pb1ShortEvent, "EMA Cloud Trend System Pro: PB1 Short", Alert.BAR, Sound.Chimes);
 Alert(useAlerts and reversalLongEvent, "EMA Cloud Trend System Pro: Trend Reversal Bullish / Long", Alert.BAR, Sound.Ring);
 Alert(useAlerts and reversalShortEvent, "EMA Cloud Trend System Pro: Trend Reversal Bearish / Short", Alert.BAR, Sound.Ring);
+Alert(useAlerts and longTrendEndEvent, "EMA Cloud Trend System Pro: Long Trend Ended / Neutral", Alert.BAR, Sound.Bell);
+Alert(useAlerts and shortTrendEndEvent, "EMA Cloud Trend System Pro: Short Trend Ended / Neutral", Alert.BAR, Sound.Bell);
 Alert(useAlerts and strengthLongEvent, "EMA Cloud Trend System Pro: Bullish / Long Strength Increasing", Alert.BAR, Sound.Ding);
 Alert(useAlerts and strengthShortEvent, "EMA Cloud Trend System Pro: Bearish / Short Strength Increasing", Alert.BAR, Sound.Ding);
 Alert(useAlerts and weakeningLongEvent, "EMA Cloud Trend System Pro: Bullish / Long Trend Weakening", Alert.BAR, Sound.Bell);

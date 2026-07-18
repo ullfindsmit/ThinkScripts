@@ -22,10 +22,12 @@ Start by reading the chart visually from left to right. The study is built so th
 | `CS:` label | Confidence Score from 0-100 | Higher scores mean stronger trend confirmation |
 | Trend label | Current regime: `STRONG BULL`, `BULL`, `NEUTRAL`, `BEAR`, or `STRONG BEAR` | Use it as the main directional filter |
 | `ES:` label | EMA Spread between the 5, 20, and 50 EMAs | Wider spread usually means stronger trend expansion |
-| `Last:` label | Most recent alert-worthy event and bar time | Quickly shows the latest buy, sell, PB1, reversal, strength, or weakening event |
+| `Last:` label | Most recent alert-worthy event and bar time | Quickly shows the latest buy, sell, PB1, trend end, reversal, strength, or weakening event |
 | `PB1(L)` / `PB1(S)` bubble | First confirmed pullback in the current trend | Most important pullback label; this is the only pullback that can trigger arrows |
 | `PB2(L)` / `PB2(S)` bubble | Second confirmed pullback in the same trend | Still useful, but later than PB1 |
 | `PB3(L)` / `PB3(S)` bubble | Third or later confirmed pullback in the same trend | Treat as mature-trend information, not a fresh-trend setup |
+| `LONG END` bubble | Bullish trend faded into neutral | Marks where the long trend ended before a confirmed short trend |
+| `SHORT END` bubble | Bearish trend faded into neutral | Marks where the short trend ended before a confirmed long trend |
 | Green up arrow | Fully filtered bullish PB1 breakout | Potential long continuation signal |
 | Red down arrow | Fully filtered bearish PB1 breakout | Potential short continuation signal |
 | Cloud legend labels | Shows the EMA pair color map | Confirms which channel each line/cloud color represents |
@@ -159,10 +161,24 @@ Examples:
 
 - `Last: Buy Long @ 20260716 10:35`
 - `Last: PB1 Short @ 20260716 13:20`
+- `Last: Long Trend Ended / Neutral @ 20260716 11:15`
+- `Last: Short Trend Ended / Neutral @ 20260716 12:05`
 - `Last: Trend Reversal Bullish / Long @ 20260716 09:45`
 - `Last: Bearish / Short Strength Increasing @ 20260716 14:10`
 
 The time shown is the time of the bar where the event occurred. On intraday charts this is most useful as a quick reminder of the latest signal. On daily, weekly, or monthly charts, the date is usually more important than the intraday time.
+
+Trend end events are different from trend reversal events:
+
+- `Long Trend Ended / Neutral` means the bullish trend condition stopped, but the study has not confirmed a bearish trend yet.
+- `Short Trend Ended / Neutral` means the bearish trend condition stopped, but the study has not confirmed a bullish trend yet.
+- `Trend Reversal Bullish / Long` means the engine has moved into a bullish trend.
+- `Trend Reversal Bearish / Short` means the engine has moved into a bearish trend.
+
+When `showTrendEndBubbles` is enabled, the chart also marks these events directly:
+
+- `LONG END` appears above the bar where a bullish trend fades into neutral.
+- `SHORT END` appears below the bar where a bearish trend fades into neutral.
 
 ## Pullbacks
 
